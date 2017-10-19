@@ -2,7 +2,11 @@
 output:
   html_document:
     keep_md: true
+<<<<<<< HEAD
 ---
+=======
+--- 
+>>>>>>> de94ff523ac047cfde30de8a99f19ca42790cc35
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
