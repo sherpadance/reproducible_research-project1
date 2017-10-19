@@ -1,12 +1,5 @@
----
-output:
-  html_document:
-    keep_md: true
----
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 Reproducible research with R - Course project 1
 ===============================================
@@ -32,13 +25,15 @@ The dataset is stored in the `activity.csv` file in the `Raw data` subdirectory 
 
 The dataset consists of 17,578 observations. It was loaded using `read.csv()` and stored in an `activity.data` variable:
 
-```{r}
+
+```r
 activity.data <- read.csv("Raw data/activity.csv")
 ```
 
 *Note*: Exploratory graphs will be plotted using the `ggplot2` package:
 
-```{r}
+
+```r
 library(ggplot2)
 ```
 
@@ -51,13 +46,15 @@ For this part, we are ignoring missing values in the dataset.
 
 Summarizing the numer of steps per day. The `aggregate()` function ignores `NA` values by default.
 
-```{r}
+
+```r
 steps.per.day <- aggregate(steps ~ date, data = activity.data, sum)
 ```
 
 ### Summarize the data in a histogram
 
-```{r}
+
+```r
 hist1 <- ggplot(data = steps.per.day, aes(steps)) + 
   geom_histogram(bins = 10, col = "white") +
   ggtitle("Histogram of total number of steps per day") +
@@ -65,16 +62,30 @@ hist1 <- ggplot(data = steps.per.day, aes(steps)) +
 print(hist1)
 ```
 
+![](PA1_Template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 ### Mean and mean total number of steps taken per day
 
 The mean and median values were rounded, to reflect that a number of steps should realistically always be an interger value.
 
-```{r}
+
+```r
 mean.steps.per.day <- round(mean(steps.per.day$steps))
 median.steps.per.day <- round(median(steps.per.day$steps))
 
 print(paste("Mean steps per day:", mean.steps.per.day))
+```
+
+```
+## [1] "Mean steps per day: 10766"
+```
+
+```r
 print(paste("Median steps per day:", median.steps.per.day))
+```
+
+```
+## [1] "Median steps per day: 10765"
 ```
 
 Investigating avearage daily activity patterns
@@ -82,7 +93,8 @@ Investigating avearage daily activity patterns
 
 First, we look at a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged over all days (y-axis) (again averaged for consistency):
 
-```{r}
+
+```r
 # First calculate the average number of steps per interval
 mean.steps.per.interval <- round(aggregate(steps ~ interval, data = activity.data, mean))
 
@@ -90,19 +102,30 @@ mean.steps.per.interval <- round(aggregate(steps ~ interval, data = activity.dat
 ggplot(data = mean.steps.per.interval, aes(interval, steps)) + 
   geom_line() +
   ggtitle("Average number of steps taken per interval across all days")
-
 ```
+
+![](PA1_Template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
 Next, let's find the interval which, on average across all days of the dataset, contains the maximum number of steps:
 
-```{r}
+
+```r
 mean.steps.per.interval$interval[which.max(mean.steps.per.interval$steps)]
+```
+
+```
+## [1] 835
 ```
 
 In case you were wondering, the corresponding maximal number of steps is:
 
-```{r}
+
+```r
 mean.steps.per.interval$steps[which.max(mean.steps.per.interval$steps)]
+```
+
+```
+## [1] 206
 ```
 
 Imputing missing values
@@ -110,13 +133,19 @@ Imputing missing values
 
 The dataset contains a significant number of missing values:
 
-```{r}
+
+```r
 sum(is.na(activity.data$steps))
+```
+
+```
+## [1] 2304
 ```
 
 To examine the impact of these missing values, we will impute these values. Our imputing strategy consists of replacing each missing steps value by the median value for the same interval across all days (excluding the missing values):
 
-```{r}
+
+```r
 # First calculate the median number of steps per interval, across all days
 median.steps.per.interval <- aggregate(steps ~ interval, data = activity.data, median)
 
@@ -132,7 +161,8 @@ activity.data.imputed$steps[na.indices] <-
 
 To examine the impact of imputing, we will compare the histogram of the imputed dataset against the histogram of the original dataset. To create a multipanel ggplot with two different plots, we are using the `gridExtra` package:
 
-```{r}
+
+```r
 library(gridExtra)
 
 # Calculate the total number of steps per day for the imputed dataset
@@ -144,7 +174,11 @@ hist2 <- ggplot(data = steps.per.day.imputed, aes(steps)) +
   ggtitle("Histogram of total number of steps per day after imputing") +
   theme(panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank())
 print(hist2)
+```
 
+![](PA1_Template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
+```r
 # Print a panel plot comparing the original and imputed histogram
 # Some housekeeping to make titles fit properly
 hist1 <- hist1 + theme(plot.title = element_text(size=8))
@@ -153,16 +187,30 @@ hist2 <- hist2+ theme(plot.title = element_text(size=8))
 grid.arrange(hist1, hist2, ncol=2)
 ```
 
+![](PA1_Template_files/figure-html/unnamed-chunk-11-2.png)<!-- -->
+
 The histograms clearly differ. It appears our imputing strategy yields mostly additional "0" step values. Other imputing strategies my result in a different impact on the histogram. 
 
 The impact is also evident from the change in average and median values:
 
-```{r}
+
+```r
 mean.steps.per.day.imputed <- round(mean(steps.per.day.imputed$steps))
 median.steps.per.day.imputed <- median(steps.per.day.imputed$steps)
 
 print(paste("Mean steps per day:", mean.steps.per.day.imputed))
+```
+
+```
+## [1] "Mean steps per day: 9504"
+```
+
+```r
 print(paste("Median steps per day:", median.steps.per.day.imputed))
+```
+
+```
+## [1] "Median steps per day: 10395"
 ```
 
 Difference in activity patterns between weekdays and weekends
@@ -174,7 +222,8 @@ First, we create a new factor variable, reflecting whether the measurement was p
 
 *Note that we are using the `weekdays()` function, which returns a character vector of names in the locale of the device on which the code is ran - which in this case means ****Dutch***.
 
-```{r}
+
+```r
 activity.data.imputed$daytype <- factor(
   ifelse(weekdays(
     as.Date(as.character(activity.data.imputed$date))
@@ -185,16 +234,20 @@ activity.data.imputed$daytype <- factor(
 
 Next, we calculate the mean number of steps per interval for weekdays and weekend days, leveraging this new factor variable:
 
-```{r}
+
+```r
 mean.steps.per.interval.and.daytype <- aggregate(steps ~ interval + daytype, data = activity.data.imputed, mean)
 ```
 
 Finally, we plot a time series plot of average number of steps, for weekdays and weekend days:
 
-```{r}
+
+```r
 ggplot(data = mean.steps.per.interval.and.daytype, aes(interval, steps)) + 
   geom_line() +
   facet_wrap(~ daytype, ncol = 1) +
   theme(plot.title = element_text(size=11)) +
   ggtitle("Average number of steps taken per interval across all days, for weekdays and weekends")
 ```
+
+![](PA1_Template_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
